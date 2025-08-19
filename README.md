@@ -2,7 +2,7 @@
 
 FreeNest is an open-source alternative to LinkTree that lets people share all their important links in one place. It's easy to use and you can change how it looks to match your style.
 
-![FreeNest Logo](https://img.shields.io/badge/FreeNest-Open%2520Source-blue) ![Status](https://img.shields.io/badge/Status-Development%2520Stage-yellow)
+![FreeNest Logo](https://img.shields.io/badge/FreeNest-Open%20Source-blue) ![Status](https://img.shields.io/badge/Status-Development%20Stage-yellow)
 
 
 ## Features
