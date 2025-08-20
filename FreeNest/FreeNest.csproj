@@ -12,4 +12,12 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Views\Shared\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DATA\DATA.csproj" />
+  </ItemGroup>
+
 </Project>

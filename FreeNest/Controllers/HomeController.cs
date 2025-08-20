@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using FreeNest.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace FreeNest.Controllers
 {

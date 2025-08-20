@@ -1,6 +1,20 @@
-﻿namespace DATA.Models
+﻿namespace FreeNest.Models.ViewModels
 {
-    public class User
+    public class UserViewModel
+    {
+        public string JsonList { get; set; }
+    }
+
+    public class UserProfileDtoModel
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string Username { get; set; }
+        public string? PasswordHash { get; set; }
+        public string Phone { get; set; }
+    }
+    public class UserDtoModel
     {
         public int Id { get; set; }
         public string Username { get; set; }
@@ -18,8 +32,5 @@
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
-
-
-        public ICollection<Link> Links { get; set; }
     }
 }
