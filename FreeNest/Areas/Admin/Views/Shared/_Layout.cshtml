@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>@ViewBag.Title | FreeNest Panel</title>
+    <link href="~/lib/font-awesome/css/all.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/admin/vendors/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="/admin/vendors/jvectormap/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/admin/vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="/admin/vendors/owl-carousel-2/owl.carousel.min.css">
+    <link rel="stylesheet" href="/admin/vendors/owl-carousel-2/owl.theme.default.min.css">
+    <link rel="stylesheet" href="/admin/css/style.css">
+    <link rel="shortcut icon" href="/admin/images/favicon.png" />
+    @await RenderSectionAsync("Styles", false)
+</head>
+<body>
+    <div class="container-scroller">
+        <partial name="_Sidebar"/>
+          <div class="container-fluid page-body-wrapper">
+                <partial name="_Header"/>
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    @RenderBody()
+                </div>
+                <partial name="_Footer" />
+            </div>
+          </div>
+    </div>
+    <script src="/admin/vendors/js/vendor.bundle.base.js"></script>
+    <script src="/admin/js/off-canvas.js"></script>
+    <script src="/admin/js/hoverable-collapse.js"></script>
+    <script src="/admin/js/misc.js"></script>
+    <script src="/admin/js/settings.js"></script>
+    <script src="/admin/js/todolist.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

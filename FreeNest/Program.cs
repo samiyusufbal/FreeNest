@@ -37,7 +37,7 @@ app.UseEndpoints(endpoints =>
     endpoints.MapAreaControllerRoute(
         name: "Admin",
         areaName: "Admin",
-        pattern: "AhsapOymaSanati/Administrator/{controller=Home}/{action=Index}/{id?}/"
+        pattern: "FreeNest/Administrator/{controller=Home}/{action=Index}/{id?}/"
         );
     endpoints.MapDefaultControllerRoute();
 });
