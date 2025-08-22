@@ -1,8 +1,5 @@
 ﻿function CreateDatatableList(data, col) {
     $(".dataTable").DataTable({
-        language: {
-            url: '/lib/datatables/data-table-turkish.json'
-        },
         "bStateSave": true,
         "fnStateSave": function (oSettings, oData) {
             localStorage.setItem('offersDataTables', JSON.stringify(oData));
@@ -30,9 +27,6 @@ function CreateExtraDatatableList(data, col) {
         .appendTo(".dataTable thead");
 
     var table = $(".dataTable").DataTable({
-        language: {
-            url: '/lib/datatables/data-table-turkish.json'
-        },
         orderCellsTop: true,
         fixedHeader: true,
         "bStateSave": true,
@@ -59,9 +53,9 @@ function CreateExtraDatatableList(data, col) {
                 var title = $(cell).text();
 
                 $(cell).html(`<input class="form-control" type="text" placeholder="${title}" />`);
-                if (title == 'Eylemler')
+                if (title == 'Actions')
                     $(cell).html('');
-                if (title == 'Kapak Fotoğrafı')
+                if (title == 'Thumbnail')
                     $(cell).html('');
 
                 $('input', $('.filters th').eq($(api.column(colIdx).header()).index()))
@@ -88,14 +82,14 @@ function CreateExtraDatatableList(data, col) {
 }
 function Delete(urlStr, id) {
     Swal.fire({
-        title: 'Bu kaydı silmek üzeresin!',
-        text: "Bu kayıtla ilgili tüm kayıtlar da silinecektir!",
+        title: 'You are about to delete this record!',
+        text: "All records related to this record will also be deleted!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#333',
-        confirmButtonText: 'Sil',
-        cancelButtonText: 'Vazgeç'
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Leave'
     }).then((result) => {
         if (result.isConfirmed) {
 

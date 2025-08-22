@@ -15,7 +15,7 @@
         public string CustomUrl { get; set; } // e.g., "mycustomprofile"
         public string Language { get; set; } // e.g., "en-US", "fr-FR"
         public string ShowAnalytics { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
 
