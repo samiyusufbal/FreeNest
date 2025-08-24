@@ -5,6 +5,7 @@ using DATA.Models;
 using FreeNest.Helpers;
 using FreeNest.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -16,11 +17,13 @@ namespace FreeNest.Areas.Admin.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly string urlPath;
-        public LinksController(IServiceProvider serviceProvider, IMapper mapper, IConfiguration configuration) : base(serviceProvider)
+        private readonly IconHelper _iconHelper;
+        public LinksController(IServiceProvider serviceProvider, IMapper mapper, IConfiguration configuration, IconHelper iconHelper) : base(serviceProvider)
         {
             _mapper = mapper;
             _configuration = configuration;
             urlPath = $"/{_configuration["AdminUrl"]}/Links/";
+            _iconHelper = iconHelper;
         }
 
         public IActionResult Index()
@@ -41,7 +44,22 @@ namespace FreeNest.Areas.Admin.Controllers
 
         public IActionResult Add()
         {
-            return View();
+            using (var scope = _serviceProvider.CreateScope())
+            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            {
+                var model = new LinkDtoModel();
+
+                var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var maxOrder = dBContext.Links
+                    .Where(l => l.UserId == userId)
+                    .Max(l => (int?)l.Order) ?? 0;
+
+                model.Order = maxOrder + 1;
+
+                ViewBag.IconList = _iconHelper.GetIcons();
+
+                return View(model);
+            }
         }
 
         [HttpPost]
@@ -64,9 +82,7 @@ namespace FreeNest.Areas.Admin.Controllers
                         if (IsAvailable is null)
                         {
                             var model = _mapper.Map<Link>(form);
-                            //model.UserId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                            model.UserId = 1;
-
+                            model.UserId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                             dBContext.Links.Add(model);
                             dBContext.SaveChanges();
 
@@ -101,7 +117,10 @@ namespace FreeNest.Areas.Admin.Controllers
 
                 var models = _mapper.Map<LinkDtoModel>(model);
                 if (models is not null)
+                {
+                    ViewBag.IconList = _iconHelper.GetIcons();
                     return View(models);
+                }
 
             }
             return View();
@@ -131,7 +150,7 @@ namespace FreeNest.Areas.Admin.Controllers
                             if (IsSameEntry is null)
                             {
                                 form.UserId = model.UserId;
-                                model.UpdatedAt = DateTime.Now;
+                                model.UpdatedAt = DateTime.UtcNow;
                                 _mapper.Map(form, model);
                                 dBContext.Links.Update(model);
                                 dBContext.SaveChanges();
@@ -154,6 +173,33 @@ namespace FreeNest.Areas.Admin.Controllers
             TempData["returnMessage"] = returnMessage.ScriptTxt;
 
             return Redirect($"{urlPath}Edit/{form.Id}");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrder(int[] ids, int[] orders)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            {
+                try
+                {
+                    for (int i = 0; i < ids.Length; i++)
+                    {
+                        var link = await dBContext.Links.FindAsync(ids[i]);
+                        if (link != null)
+                        {
+                            link.Order = orders[i];
+                            link.UpdatedAt = DateTime.UtcNow;
+                        }
+                    }
+                    await dBContext.SaveChangesAsync();
+                    return Json(new { success = true });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
+            }
         }
 
         public JsonResult Delete(int Id)

@@ -1,4 +1,5 @@
 using DATA;
+using FreeNest.Helpers;
 using FreeNest.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperProfile>());
+
+builder.Services.AddSingleton<IconHelper>();
 
 string connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DataDbContext>(options =>
