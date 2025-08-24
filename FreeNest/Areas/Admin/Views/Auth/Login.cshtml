@@ -1,0 +1,60 @@
+﻿@model FreeNest.Models.UserLoginModel
+@{
+    Layout = "";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login | FreeNest Panel</title>
+    <link rel="stylesheet" href="~/admin/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="~/admin/vendors/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="~/admin/css/style.css">
+    <link href="~/lib/sweetalert/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <link href="~/lib/toast-master/css/jquery.toast.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="~/admin/images/favicon.png" />
+</head>
+<body>
+    <div class="container-scroller">
+        <div class="container-fluid page-body-wrapper full-page-wrapper">
+            <div class="row w-100 m-0">
+                <div class="content-wrapper full-page-wrapper d-flex align-items-center auth login-bg">
+                    <div class="card col-lg-3 mx-auto">
+                        <div class="card-body px-5 py-5">
+                            <h3 class="card-title text-left mb-3">GİRİŞ</h3>
+                            <form method="post" action="">
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Query["ReturnUrl"]" />
+                                @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
+                                <div class="form-group">
+                                    <label>E-Mail *</label>
+                                    <input type="email" class="form-control" id="EMail" name="EMail" asp-for="Email" placeholder="Enter your email address." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password *</label>
+                                    <input type="password" class="form-control" id="Password" name="Password" asp-for="Password" placeholder="Enter your password." required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-block enter-btn">Log In</button>
+                                    <p>Don't you have an account? <a href="/FreeNest/Administrator/Auth/Register/" class="text-primary">Register</a></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/admin/vendors/js/vendor.bundle.base.js"></script>
+    <script src="~/admin/js/off-canvas.js"></script>
+    <script src="~/admin/js/hoverable-collapse.js"></script>
+    <script src="~/admin/js/misc.js"></script>
+    <script src="~/admin/js/settings.js"></script>
+    <script src="~/admin/js/todolist.js"></script>
+    <script src="~/lib/sweetalert/sweetalert2.min.js"></script>
+    <script src="~/lib/toast-master/js/jquery.toast.js"></script>
+    <script>
+        @Html.Raw(TempData["returnMessage"]);
+    </script>
+</body>
+</html>

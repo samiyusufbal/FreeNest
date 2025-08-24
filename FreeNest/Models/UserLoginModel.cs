@@ -14,5 +14,6 @@
         public string? Email { get; set; }
         public string? FullName { get; set; }
         public string? PPhoto { get; set; }
+        public string? UserPermission { get; set; }
     }
 }

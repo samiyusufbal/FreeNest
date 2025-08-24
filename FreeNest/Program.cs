@@ -1,5 +1,6 @@
 using DATA;
 using FreeNest.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,21 @@ builder.Services.AddDbContext<DataDbContext>(options =>
         connection,
         ServerVersion.AutoDetect(connection)
     ));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(cookieOptions =>
+    {
+        cookieOptions.LoginPath = $"/{builder.Configuration["AdminURL"]}/Auth/Login";
+        cookieOptions.Cookie.Name = "UserLoginCookie";
+        cookieOptions.AccessDeniedPath = $"/{builder.Configuration["AdminURL"]}/Auth/Login";
+        cookieOptions.ReturnUrlParameter = "ReturnUrl";
+
+        cookieOptions.ExpireTimeSpan = TimeSpan.FromDays(2);
+        cookieOptions.SlidingExpiration = true;
+        cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        cookieOptions.Cookie.HttpOnly = true;
+        cookieOptions.Cookie.SameSite = SameSiteMode.Lax;
+    });
 
 var app = builder.Build();
 
@@ -31,6 +47,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+builder.Services.AddMemoryCache();
 
 app.UseEndpoints(endpoints =>
 {

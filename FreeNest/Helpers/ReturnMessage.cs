@@ -21,13 +21,13 @@ namespace FreeNest.Helpers
 
             if (msgType == ReturnMessageType.Error)
             {
-                script.Append(@" heading:'HATA',");
+                script.Append(@" heading:'ERROR',");
                 script.Append(" position: 'top-center', loaderBg: '#ff6849' ,  hideAfter: 3500 , icon: 'error' , stack: 6});");
 
             }
             else
             {
-                script.Append(@" heading:'Başarılı',");
+                script.Append(@" heading:'Successful',");
                 script.Append(" position: 'top-center', loaderBg: '#ff6849' ,  hideAfter: 3500 , icon: 'success' , stack: 6});");
 
             }

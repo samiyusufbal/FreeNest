@@ -1,0 +1,80 @@
+﻿@model FreeNest.Models.ViewModels.LinkViewModel
+@inject IConfiguration Configuration
+@{
+    ViewBag.Title = "Links";
+    string mainUrl = $"/{Configuration["AdminUrl"]}/";
+    string webUrl = $"/{Configuration["AdminUrl"]}/Links";
+}
+@section Styles {
+    <link href="~/lib/sweetalert/sweetalert2.min.css" rel="stylesheet" type="text/css">
+}
+@section Scripts {
+    <script src="~/lib/sweetalert/sweetalert2.min.js"></script>
+    <script src="~/lib/datatables/datatables.min.js"></script>
+    <script src="~/js/custom.js"></script>
+    <script src="~/js/site.js"></script>
+    <script>
+        menuParentActive($("#linksA"));
+        var data = @Html.Raw(Model.JsonList);
+
+        var cols = [
+            { data: 'Order' },
+            { data: 'Title' },
+            {
+                data: 'Url',
+                "render": function (data) {
+                    return `<a href="${data}">${data}</a>`;
+                },
+            },
+            {
+                data: 'Icon',
+                "render": function (data) {
+                    return `<i class="${data}"></i>`;
+                },
+            },
+            {
+                data: 'Id',
+                "render": function (data) {
+                    return `<a role="button" href = "@webUrl/Edit/${data}/" title="Edit" class=" btn btn-rounded btn-sm btn-info"><i class="fa-solid fa-pen"></i></a>
+                            <a role="button" href="javascript:Delete('@webUrl/Delete/' ,${data})" title="Delete" class="btn btn-rounded btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>`;
+                },
+                orderable: false
+            }
+        ];
+        CreateDatatableList(data, cols);
+    </script>
+}
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@mainUrl">Home Page</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+        </ol>
+    </nav>
+    <div>
+        <a href="@webUrl/Add/" class="btn waves-effect waves-light btn-success"><i class="fa-solid fa-plus"></i> Add</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <div class="table-responsive">
+                    <table id="show_hide_col" class="display nowrap table table-hover table-bordered dataTable" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="1%">Order</th>
+                                <th width="20%">Title</th>
+                                <th width="20%">Url</th>
+                                <th width="20%">Icon</th>
+                                <th width="5%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

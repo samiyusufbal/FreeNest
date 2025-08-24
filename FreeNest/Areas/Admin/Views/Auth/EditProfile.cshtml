@@ -1,0 +1,122 @@
+﻿@model FreeNest.Helpers.ReturnMessage<FreeNest.Models.ViewModels.UserProfileDtoModel>
+@inject IConfiguration Configuration
+@{
+    ViewBag.Title = "Edit Profile";
+    string mainUrl = $"/{Configuration["AdminUrl"]}/";
+    string webUrl = $"/{Configuration["AdminUrl"]}/Auth/EditProfile";
+}
+@section Styles {
+    <link href="~/lib/sweetalert/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <link href="~/lib/toast-master/css/jquery.toast.css" rel="stylesheet" type="text/css">
+}
+@section Scripts {
+    <script src="~/lib/sweetalert/sweetalert2.min.js"></script>
+    <script src="~/lib/toast-master/js/jquery.toast.js"></script>
+    <script src="~/js/site.js"></script>
+    <script>
+        @Html.Raw(TempData["returnMessage"]);
+    </script>
+}
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@mainUrl">Ana Sayfa</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+        </ol>
+    </nav>
+</div>
+<div class="row">
+    <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body px-5 py-5">
+                <h3 class="card-title text-left mb-3">EDIT PROFILE</h3>
+                <form class="forms-sample" method="post" enctype="multipart/form-data">
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
+                    <input type="hidden" name="Id" value="@Model.model.Id" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" class="form-control" id="Fullname" name="Fullname"
+                                       placeholder="Enter your full name" required value="@Model.model.FullName">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" class="form-control" id="Username" name="Username"
+                                       placeholder="Enter username" required value="@Model.model.Username">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" class="form-control" id="Email" name="Email" placeholder="Enter your email address"
+                               required value="@Model.model.Email" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" id="PasswordHash" name="PasswordHash"
+                               placeholder="Enter new password (leave blank to keep current)" value="" />
+                        <small class="form-text text-muted">Leave blank if you don't want to change your password</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea class="form-control" id="Bio" name="Bio" placeholder="Tell us about yourself"
+                                  rows="5">@Model.model.Bio</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Language</label>
+                                <select asp-for="model.Language" asp-items="@Model.model.LanguageOptions" class="form-control">
+                                    <option value="">Select Language</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Theme</label>
+                                <select asp-for="model.Theme" asp-items="@Model.model.ThemeOptions" class="form-control">
+                                    <option value="">Select Theme</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Profile Picture</label>
+                        <input type="file" class="form-control" id="AvatarFile" name="AvatarFile" accept="image/*">
+                        <small class="form-text text-muted">Select an image file for your profile picture</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Custom URL</label>
+                        <input type="url" class="form-control" id="CustomUrl" name="CustomUrl"
+                               placeholder="Enter custom URL" value="@Model.model.CustomUrl">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="ShowAnalytics" name="ShowAnalytics"
+                                   value="true" @(Model.model.ShowAnalytics ? "checked" : "")>
+                            <label class="form-check-label" for="ShowAnalytics">
+                                Enable analytics display
+                            </label>
+                        </div>
+                        <input type="hidden" name="ShowAnalytics" value="false">
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-block enter-btn">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
