@@ -35,6 +35,7 @@ namespace FreeNest.Areas.Admin.Controllers
             using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
             {
                 model.JsonList = JsonSerializer.Serialize(dBContext.Links
+                    .Where(w => w.UserId == int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value))
                     .OrderBy(a => a.Order)
                     .ToList(), options);
             }
