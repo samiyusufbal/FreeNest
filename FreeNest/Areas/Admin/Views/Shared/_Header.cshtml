@@ -1,7 +1,43 @@
 ﻿@using System.Security.Claims;
+@using DATA
+@using DATA.Models
+@using Microsoft.Extensions.Caching.Memory
 @inject IConfiguration Configuration
+@inject DataDbContext _context
+@inject IMemoryCache _memoryCache
 @{
     string mainUrl = $"/{Configuration["AdminUrl"]}";
+    string fullname = "";
+    string avatarUrl = "";
+
+    if (User.Identity.IsAuthenticated)
+    {
+        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+
+        // Cache key
+        var cacheKey = $"User_{userId}";
+
+        // Cache’den çekmeye çalış
+        if (!_memoryCache.TryGetValue(cacheKey, out User user))
+        {
+            // DB’den çek
+            user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+            if (user != null)
+            {
+                // Cache’e ekle (sliding expiration: 10 dakika)
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(10));
+                _memoryCache.Set(cacheKey, user, cacheOptions);
+            }
+        }
+
+        if (user != null)
+        {
+            fullname = user.FullName;
+            avatarUrl = user.AvatarUrl ?? "/admin/images/faces/face15.jpg";
+        }
+    }
 }
 <nav class="navbar p-0 fixed-top d-flex flex-row">
     <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
@@ -15,8 +51,8 @@
             <li class="nav-item dropdown">
                 <a class="nav-link" id="profileDropdown" href="#" data-bs-toggle="dropdown">
                     <div class="navbar-profile">
-                        <img class="img-xs rounded-circle" src="/admin/images/faces/face15.jpg" alt="">
-                        <p class="mb-0 d-none d-sm-block navbar-profile-name">Test User</p>
+                        <img class="img-xs rounded-circle" src="@avatarUrl" alt="">
+                        <p class="mb-0 d-none d-sm-block navbar-profile-name">@fullname</p>
                         <i class="mdi mdi-menu-down d-none d-sm-block"></i>
                     </div>
                 </a>
@@ -34,7 +70,7 @@
                         </div>
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item preview-item" href="@mainUrl/Auth/Logout">
+                    <a class="dropdown-item preview-item" href="@mainUrl/Auth/Logout/">
                         <div class="preview-thumbnail">
                             <div class="preview-icon bg-dark rounded-circle">
                                 <i class="fa-solid fa-right-from-bracket text-danger"></i>

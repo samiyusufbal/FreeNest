@@ -1,5 +1,6 @@
 ﻿using DATA;
 using FreeNest.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,6 +8,7 @@ using System.Text.Json.Serialization;
 namespace FreeNest.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "admin")]
     public class UsersController : BaseController
     {
         public UsersController(IServiceProvider serviceProvider) : base(serviceProvider) { }

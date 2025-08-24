@@ -225,7 +225,7 @@ namespace FreeNest.Areas.Admin.Controllers
         {
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("UserLoginCookie");
-            return LocalRedirect($"/{urlPath}/Auth/Login");
+            return Redirect($"{urlPath}Auth/Login");
         }
 
 
