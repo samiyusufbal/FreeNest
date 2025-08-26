@@ -20,7 +20,7 @@ FreeNest is an open-source alternative to LinkTree that lets people share all th
 - **Backend:** .NET Core
 - **Frontend:** JQuery
 - **Database:** MySQL
-- **Authentication:** JWT
+- **Authentication:** .NET Core Cookie
 
 ## Installation
 
