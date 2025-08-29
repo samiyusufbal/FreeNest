@@ -52,6 +52,25 @@
         .icon-option {
             margin-right: 10px;
         }
+
+        .form-check {
+            margin-top: 10px;
+        }
+
+        .form-check-input {
+            background-color: #2A3038;
+            border-color: #444;
+        }
+
+            .form-check-input:checked {
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+        .form-check-label {
+            color: #fff;
+            margin-left: 5px;
+        }
     </style>
 }
 @section Scripts {
@@ -117,6 +136,16 @@
                     <div class="form-group">
                         <label for="Order">Order</label>
                         <input type="number" class="form-control" id="Order" name="Order" placeholder="Enter link order" value="@Model.Order">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="IsSocial" name="IsSocial" value="true">
+                            <input type="hidden" name="IsSocial" value="false">
+                            <label class="form-check-label" for="IsSocial">
+                                Is Social Media Link
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Check this if this is a social media profile link</small>
                     </div>
                     <button type="submit" class="btn btn-primary me-2">Add</button>
                 </form>

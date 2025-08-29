@@ -1,0 +1,206 @@
+﻿@model FreeNest.Models.ViewModels.UserViewModel
+@{
+    ViewData["Title"] = "All Users";
+}
+@section Styles {
+    <style>
+        .user-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+            .user-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+                text-decoration: none;
+                color: inherit;
+            }
+
+        .avatar-container {
+            padding: 30px 20px 10px 20px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #f0f0f0;
+            margin: 0 auto;
+            display: block;
+            background: linear-gradient(45deg, #6a89cc, #4a69bd);
+        }
+
+        .user-info {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .user-username {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .user-email {
+            color: #3498db;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #f1f1f1;
+            padding: 15px 10px;
+            background-color: #fafafa;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 0 0 15px 15px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+            .action-btn:hover {
+                background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+                color: white;
+            }
+
+        .no-users {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function() {
+            filterUsers();
+        });
+
+        document.getElementById('userSearch').addEventListener('keyup', function() {
+            filterUsers();
+        });
+
+        function filterUsers() {
+            const searchText = document.getElementById('userSearch').value.toLowerCase();
+            const userCards = document.querySelectorAll('.user-card');
+
+            userCards.forEach(card => {
+                const userName = card.querySelector('.user-name').textContent.toLowerCase();
+                const userUsername = card.querySelector('.user-username').textContent.toLowerCase();
+                const userEmail = card.querySelector('.user-email').textContent.toLowerCase();
+
+                if (userName.includes(searchText) || userUsername.includes(searchText) || userEmail.includes(searchText)) {
+                    card.parentElement.style.display = 'block';
+                } else {
+                    card.parentElement.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}
+
+<div class="header bg-primary text-white py-4 mb-4">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Our User Community</h1>
+        <p class="lead">Discover all users on our platform</p>
+
+        <div class="search-container mx-auto" style="max-width: 500px;">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control form-control-lg" placeholder="Search users..." id="userSearch">
+                <button class="btn btn-light" type="button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    @if (Model.Users != null && Model.Users.Any())
+    {
+        <div class="row">
+            @foreach (var user in Model.Users)
+            {
+                <div class="col-md-4 mb-4">
+                    <a href="/?username=@user.Username" class="user-card" target="_blank">
+                        <div class="avatar-container">
+                            @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                            {
+                                <img src="/uploads/avatars/@user.AvatarUrl" class="avatar" alt="@user.Username">
+                            }
+                            else
+                            {
+                                <div class="avatar d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-user fa-2x text-white"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">@user.FullName</div>
+                            <div class="user-username">@@@user.Username</div>
+                            <div class="user-email">@user.Email</div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">@(user.Links?.Count ?? 0)</div>
+                                <div class="stat-label">Links</div>
+                            </div>
+                        </div>
+                        <div class="action-btn">Go to Profile</div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-users text-center py-5">
+            <i class="fas fa-users fs-1 text-muted mb-3"></i>
+            <h3 class="text-muted">No users found yet</h3>
+        </div>
+    }
+</div>

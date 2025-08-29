@@ -1,26 +1,40 @@
+using DATA;
 using FreeNest.Models;
+using FreeNest.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace FreeNest.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        private readonly ILogger<HomeController> _logger;
+        public HomeController(IServiceProvider serviceProvider) : base(serviceProvider) { }
 
-        public HomeController(ILogger<HomeController> logger)
+        public IActionResult Index(string? username)
         {
-            _logger = logger;
-        }
+            using (var scope = _serviceProvider.CreateScope())
+            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            {
+                if (string.IsNullOrEmpty(username))
+                {
+                    UserViewModel allUsersModel = new();
+                    allUsersModel.Users = dBContext.Users.Include(i => i.Links).ToList();
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+                    return View("HomePage", allUsersModel);
+                }
 
-        public IActionResult Privacy()
-        {
-            return View();
+                LinkViewModel model = new();
+
+                var userModel = dBContext.Users.Where(b => b.Username == username).FirstOrDefault();
+                if (userModel is null)
+                    return Redirect("/404");
+
+                model.User = userModel;
+                model.Links = dBContext.Links.Where(b => b.UserId == userModel.Id).OrderBy(a => a.Order).ToList();
+
+                return View("Index", model);
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

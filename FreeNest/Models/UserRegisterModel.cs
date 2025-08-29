@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 namespace FreeNest.Models
 {
     public class UserRegisterModel
@@ -32,48 +31,11 @@ namespace FreeNest.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match")]
         public string ConfirmPassword { get; set; }
 
-        [Phone(ErrorMessage = "Please enter a valid phone number")]
-        [Display(Name = "Phone Number")]
-        public string? GSM { get; set; }
-
         [Display(Name = "Bio")]
         [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters")]
         public string? Bio { get; set; }
 
         [Display(Name = "Avatar")]
         public IFormFile? AvatarFile { get; set; }
-
-        [Display(Name = "Theme")]
-        public string Theme { get; set; } = "system";
-
-        [Display(Name = "Language")]
-        public string Language { get; set; } = "en";
-
-        [Display(Name = "Show Analytics")]
-        public bool ShowAnalytics { get; set; } = false;
-
-        [Display(Name = "Custom URL")]
-        [Url(ErrorMessage = "Please enter a valid URL")]
-        public string? CustomUrl { get; set; }
-
-        // SelectList properties for dropdowns
-        public SelectList ThemeOptions { get; set; }
-        public SelectList LanguageOptions { get; set; }
-
-        public UserRegisterModel()
-        {
-            ThemeOptions = new SelectList(new List<SelectListItem>
-            {
-                new SelectListItem { Value = "system", Text = "System" },
-                new SelectListItem { Value = "light", Text = "Light" },
-                new SelectListItem { Value = "dark", Text = "Dark" }
-            }, "Value", "Text");
-
-            LanguageOptions = new SelectList(new List<SelectListItem>
-            {
-                new SelectListItem { Value = "en", Text = "English" },
-                new SelectListItem { Value = "tr", Text = "Türkçe" }
-            }, "Value", "Text");
-        }
     }
 }

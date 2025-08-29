@@ -1,8 +1,188 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model FreeNest.Models.ViewModels.LinkViewModel
+@{
+    Layout = "";
 }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.User?.Username - FreeTree</title>
+    <link href="~/lib/font-awesome/css/all.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-bio {
+            color: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .link-item {
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 25px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+            .link-item:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                color: #333;
+                text-decoration: none;
+                background: rgba(255,255,255,1);
+            }
+
+        .link-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            color: #667eea;
+        }
+
+        .link-text {
+            flex-grow: 1;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .link-arrow {
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .link-item:hover .link-arrow {
+            color: #667eea;
+        }
+
+        .social-links {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin: 0 10px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+            .social-link:hover {
+                background: rgba(255,255,255,0.3);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        @@media (max-width: 768px) {
+            .profile-container {
+                padding: 15px;
+            }
+
+            .profile-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .link-item {
+                padding: 12px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="profile-container">
+            <div class="profile-header">
+                <img src="/uploads/avatars/@Model.User?.AvatarUrl" alt="Profil Resmi" class="profile-image">
+                <h1 class="profile-name">@Model.User?.Username</h1>
+                <p class="profile-bio">@Model.User?.Bio</p>
+            </div>
+
+            @foreach (var link in Model.Links)
+            {
+                @if (link.IsSocial == false)
+                {
+                    <div class="links-container">
+                        <a href="@link.Url" class="link-item" target="_blank">
+                            <i class="@link.Icon link-icon"></i>
+                            <span class="link-text">@link.Title</span>
+                            <i class="fas fa-chevron-right link-arrow"></i>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="social-links">
+                        <a href="@link.Url" class="social-link" target="_blank">
+                            <i class="@link.Icon"></i>
+                        </a>
+                    </div>
+                }
+            }
+
+
+            <div class="footer">
+                <p>© 2024 - Tüm hakları saklıdır</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

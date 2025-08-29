@@ -7,7 +7,6 @@ namespace DATA
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Link> Links { get; set; }
-        public DbSet<LinkClick> LinkClicks { get; set; }
 
         public DataDbContext(DbContextOptions<DataDbContext> options) : base(options) { }
 
@@ -15,7 +14,6 @@ namespace DATA
         {
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Link>().ToTable("Links");
-            modelBuilder.Entity<LinkClick>().ToTable("LinkClicks");
         }
     }
 }

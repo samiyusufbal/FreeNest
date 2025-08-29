@@ -18,9 +18,6 @@ namespace FreeNest.Models
             CreateMap<Link, LinkDtoModel>();
             CreateMap<LinkDtoModel, Link>();
 
-            CreateMap<LinkClick, LinkClickDtoModel>();
-            CreateMap<LinkClickDtoModel, LinkClick>();
-
             CreateMap<User, UserDtoModel>();
             CreateMap<UserDtoModel, User>()
                 .ForMember(p => p.PasswordHash, option => { option.PreCondition(a => a.PasswordHash is null); option.Ignore(); });

@@ -178,12 +178,9 @@ namespace FreeNest.Areas.Admin.Controllers
                     // Override specific properties
                     newUser.PasswordHash = passwordHasher.HashPassword(key, userRegister.Password);
                     newUser.AvatarUrl = avatarPath;
-                    newUser.Theme = userRegister.Theme ?? "system";
-                    newUser.Language = userRegister.Language ?? "en";
                     newUser.CreatedAt = DateTime.UtcNow;
                     newUser.UpdatedAt = DateTime.UtcNow;
                     newUser.UserPermission = "user";
-                    newUser.IsEmailVerified = false;
                     newUser.DeletedAt = null;
 
                     dBContext.Users.Add(newUser);
