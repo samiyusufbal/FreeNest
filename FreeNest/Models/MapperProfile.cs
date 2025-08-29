@@ -13,6 +13,7 @@ namespace FreeNest.Models
             CreateMap<User, UserProfileDtoModel>();
             CreateMap<UserProfileDtoModel, User>()
                 .ForMember(p => p.PasswordHash, option => { option.PreCondition(a => a.PasswordHash is null); option.Ignore(); })
+                .ForMember(dest => dest.UserPermission, opt => opt.Ignore())
                 .ForMember(dest => dest.AvatarUrl, opt => opt.Ignore());
 
             CreateMap<Link, LinkDtoModel>();
@@ -23,9 +24,10 @@ namespace FreeNest.Models
                 .ForMember(p => p.PasswordHash, option => { option.PreCondition(a => a.PasswordHash is null); option.Ignore(); });
 
             CreateMap<UserRegisterModel, User>()
-            .ForMember(dest => dest.AvatarUrl, opt => opt.Ignore())
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+                .ForMember(dest => dest.AvatarUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.UserPermission, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
         }
     }
 }

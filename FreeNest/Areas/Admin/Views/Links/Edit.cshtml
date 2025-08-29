@@ -119,12 +119,11 @@
                     <div class="form-group">
                         <label for="Icon">Icon Selection</label>
                         <select class="form-control icon-select" id="Icon" name="Icon" required>
+                            <option value="" disabled selected hidden>-- Select Icon --</option>
                             @foreach (var icon in iconList)
                             {
                                 var displayName = icon.Replace("fab fa-", "").Replace("-", " ");
-                                <option value="@icon" selected="@(Model.Icon == icon)" data-icon="@icon">
-                                    <i class="@icon"></i> @displayName
-                                </option>
+                                <option value="@icon" data-icon="@icon">@displayName</option>
                             }
                         </select>
                     </div>

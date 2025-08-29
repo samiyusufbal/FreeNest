@@ -13,9 +13,9 @@ namespace FreeNest.Models.ViewModels
         public int Id { get; set; }
         public string FullName { get; set; }
         public string Username { get; set; }
-        public string UserPermission { get; set; }
+        public string? UserPermission { get; set; }
         public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
         public string? Bio { get; set; }
         public IFormFile? AvatarFile { get; set; }
         public string? AvatarUrl { get; set; }

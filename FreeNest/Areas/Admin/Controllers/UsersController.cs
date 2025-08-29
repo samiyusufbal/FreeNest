@@ -11,56 +11,48 @@ namespace FreeNest.Areas.Admin.Controllers
     [Authorize(Roles = "admin")]
     public class UsersController : BaseController
     {
+        private const string FilterAll = "all";
+        private const string FilterDeleted = "deleted";
+
         public UsersController(IServiceProvider serviceProvider) : base(serviceProvider) { }
 
-        public IActionResult Index([FromQuery] string filter = null)
+        public IActionResult Index([FromQuery] string? filter = null)
         {
-            UserViewModel model = new();
-            JsonSerializerOptions options = new() { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            IQueryable<DATA.Models.User> query = db.Users;
+
+            if (filter == FilterDeleted)
+                query = query.Where(u => u.DeletedAt != null);
+            else if (filter != FilterAll)
+                query = query.Where(u => u.DeletedAt == null);
+
+            var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+
+            var model = new UserViewModel
             {
-                if (filter is "all")
-                {
-                    model.JsonList = JsonSerializer.Serialize(dBContext.Users
-                        .OrderBy(a => a.Id)
-                        .ToList(), options);
-                }
-                else if (filter is "deleted")
-                {
-                    model.JsonList = JsonSerializer.Serialize(dBContext.Users
-                        .Where(a => a.DeletedAt != null)
-                        .OrderBy(a => a.Id)
-                        .ToList(), options);
-                }
-                else
-                {
-                    model.JsonList = JsonSerializer.Serialize(dBContext.Users
-                        .Where(a => a.DeletedAt == null)
-                        .OrderBy(a => a.Id)
-                        .ToList(), options);
-                }
-            }
+                JsonList = JsonSerializer.Serialize(query.OrderBy(u => u.Id).ToList(), options)
+            };
+
             return View(model);
         }
-        public JsonResult Delete(int Id)
-        {
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
-            {
-                var model = dBContext.Users.Where(b => b.Id == Id).FirstOrDefault();
 
-                if (model is not null)
-                {
-                    model.DeletedAt = DateTime.Now;
-                    dBContext.Update(model);
-                    dBContext.SaveChanges();
-                    return new JsonResult("success");
-                }
-                else
-                    return new JsonResult("error");
-            }
+        [HttpPost]
+        public JsonResult Delete(int id)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+
+            var user = db.Users.FirstOrDefault(u => u.Id == id);
+            if (user is null)
+                return Json(new { success = false, message = "User not found" });
+
+            user.DeletedAt = DateTime.UtcNow;
+            db.Users.Update(user);
+            db.SaveChanges();
+
+            return Json(new { success = true });
         }
     }
 }

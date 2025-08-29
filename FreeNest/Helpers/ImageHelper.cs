@@ -4,34 +4,61 @@ namespace FreeNest.Helpers
 {
     public static class ImageHelper
     {
-        public static bool IsValidImage(string filename)
-        {
-            var ext = Path.GetExtension(filename).ToLower();
-            var validExt = new List<string> { ".jpg", ".jpeg", ".png", ".gif" };
+        private static readonly HashSet<string> _validImageExts = new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".gif" };
+        private static readonly HashSet<string> _validFileExts = new(StringComparer.OrdinalIgnoreCase) { ".pdf", ".jpg", ".jpeg", ".png", ".gif" };
 
-            return validExt.Contains(ext);
+        public static bool IsValidImage(string filename) =>
+            _validImageExts.Contains(Path.GetExtension(filename));
+
+        public static bool IsValidFile(string filename) =>
+            _validFileExts.Contains(Path.GetExtension(filename));
+
+        public static string SaveImage(Stream inStream, string inFile, string outFolder, int width, int height) =>
+            SaveInternal(inStream, inFile, outFolder, width, height, CropScaleMode.Crop);
+
+        public static string SaveImage(Stream inStream, string inFile, string outFolder, int maxSize = 1000) =>
+            SaveInternal(inStream, inFile, outFolder, maxSize, maxSize, CropScaleMode.Max);
+
+        public static string SaveImage(Stream inStream, string inFile, string outFolder) =>
+            SaveInternal(inStream, inFile, outFolder, null, null);
+
+        public static string SaveFile(Stream inStream, string inFile, string outFolder)
+        {
+            var fileName = SanitizeFileName(inFile);
+            const string ext = ".pdf";
+            var outPath = GetUniqueFilePath(outFolder, fileName, ext);
+
+            using var outStream = new FileStream(outPath, FileMode.Create);
+            inStream.CopyTo(outStream);
+
+            return Path.GetFileName(outPath);
         }
 
-        public static bool IsValidFile(string filename)
+        public static bool RemoveFile(string filePath)
         {
-            var ext = Path.GetExtension(filename).ToLower();
-            var validExt = new List<string> { ".pdf", ".jpg", ".jpeg", ".png", ".gif" };
+            if (!File.Exists(filePath)) return false;
 
-            return validExt.Contains(ext);
+            File.Delete(filePath);
+            return true;
         }
 
-        public static string SaveImage(Stream inFileStream, string inFile, string outFolderPath, int width, int height)
+        // 🔽 Private Helpers
+        private static string SaveInternal(Stream inStream, string inFile, string outFolder, int? width, int? height, CropScaleMode? mode = null)
         {
-            var ext = Path.GetExtension(inFile);
+            var ext = Path.GetExtension(inFile).ToLower();
+            var fileName = SanitizeFileName(inFile);
 
-            var fileName = Path.GetFileNameWithoutExtension(inFile).Replace(" ", "");
-            if (fileName.Length > 90)
-                fileName = fileName.Substring(0, 80);
+            if (!_validImageExts.Contains(ext))
+                ext = ".jpg"; // fallback
+
+            var outPath = GetUniqueFilePath(outFolder, fileName, ext);
 
             var settings = new ProcessImageSettings
             {
-                Width = width,
-                Height = height,
+                Width = width ?? 0,
+                Height = height ?? 0,
+                ResizeMode = mode ?? CropScaleMode.Max,
+                HybridMode = HybridScaleMode.Off
             };
 
             if (ext == ".png")
@@ -40,132 +67,33 @@ namespace FreeNest.Helpers
             {
                 settings.TrySetEncoderFormat(ImageMimeTypes.Jpeg);
                 settings.DpiX = settings.DpiY = 80;
-                ext = ".jpg";
             }
 
-            while (File.Exists(Path.Combine(outFolderPath, fileName + ext)))
-            {
-                var rnd = new Random().Next(1, 99999);
-                fileName = $"{fileName}_{rnd}";
-            }
+            using var outStream = new FileStream(outPath, FileMode.Create);
+            MagicImageProcessor.ProcessImage(inStream, outStream, settings);
 
-
-            var outPath = Path.Combine(outFolderPath, fileName + ext);
-
-            using (var outStream = new FileStream(outPath, FileMode.Create))
-            {
-                MagicImageProcessor.ProcessImage(inFileStream, outStream, settings);
-            }
-
-            return fileName + ext;
+            return Path.GetFileName(outPath);
         }
 
-        public static string SaveImage(Stream inFileStream, string inFile, string outFolderPath, int maxSize = 1000)
+
+        private static string SanitizeFileName(string inFile)
         {
-            var ext = Path.GetExtension(inFile).ToLower();
             var fileName = Path.GetFileNameWithoutExtension(inFile).Replace(" ", "");
-
-            if (fileName.Length > 90)
-                fileName = fileName.Substring(0, 80);
-
-            if (ext != ".png" && ext != ".jpg" && ext != ".jpeg")
-                ext = ".jpg";
-
-            while (File.Exists(Path.Combine(outFolderPath, fileName + ext)))
-            {
-                var rnd = new Random().Next(1, 99999);
-                fileName = $"{fileName}_{rnd}";
-            }
-
-            var outPath = Path.Combine(outFolderPath, fileName + ext);
-
-            using (var outStream = new FileStream(outPath, FileMode.Create))
-            {
-                var settings = new ProcessImageSettings
-                {
-                    Width = maxSize,
-                    Height = maxSize,
-                    ResizeMode = CropScaleMode.Max,
-                    HybridMode = HybridScaleMode.Off
-                };
-
-                MagicImageProcessor.ProcessImage(inFileStream, outStream, settings);
-            }
-
-            return fileName + ext;
+            return fileName.Length > 90 ? fileName[..80] : fileName;
         }
 
-        public static string SaveImage(Stream inFileStream, string inFile, string outFolderPath)
+        private static string GetUniqueFilePath(string folder, string fileName, string ext)
         {
-            var ext = Path.GetExtension(inFile);
-            var fileName = Path.GetFileNameWithoutExtension(inFile).Replace(" ", "");
-            if (fileName.Length > 90)
-                fileName = fileName.Substring(0, 80);
+            var outPath = Path.Combine(folder, fileName + ext);
 
-            var settings = new ProcessImageSettings();
-
-            if (ext == ".png")
-                settings.TrySetEncoderFormat(ImageMimeTypes.Png);
-            else
+            var rnd = new Random();
+            while (File.Exists(outPath))
             {
-                settings.TrySetEncoderFormat(ImageMimeTypes.Jpeg);
-                settings.DpiX = settings.DpiY = 80;
-                ext = ".jpg";
+                fileName = $"{fileName}_{rnd.Next(1, 99999)}";
+                outPath = Path.Combine(folder, fileName + ext);
             }
 
-            while (File.Exists(Path.Combine(outFolderPath, fileName + ext)))
-            {
-                var rnd = new Random().Next(1, 99999);
-                fileName = $"{fileName}_{rnd}";
-            }
-
-            var outPath = Path.Combine(outFolderPath, fileName + ext);
-
-            using (var outStream = new FileStream(outPath, FileMode.Create))
-            {
-                MagicImageProcessor.ProcessImage(inFileStream, outStream, settings);
-            }
-
-            return fileName + ext;
-        }
-
-        public static string SaveFile(Stream inFileStream, string inFile, string outFolderPath)
-        {
-            var ext = ".pdf";
-            var fileName = Path.GetFileNameWithoutExtension(inFile).Replace(" ", "");
-            if (fileName.Length > 90)
-                fileName = fileName.Substring(0, 80);
-
-
-
-
-            while (File.Exists(Path.Combine(outFolderPath, fileName + ext)))
-            {
-                var rnd = new Random().Next(1, 99999);
-                fileName = $"{fileName}_{rnd}";
-            }
-
-
-            var outPath = Path.Combine(outFolderPath, fileName + ext);
-
-            using (var outStream = new FileStream(outPath, FileMode.Create))
-            {
-                inFileStream.CopyTo(outStream);
-            }
-
-            return fileName + ext;
-        }
-
-        public static bool RemoveFile(string fileName)
-        {
-
-            if (File.Exists(fileName))
-            {
-                File.Delete(fileName);
-                return true;
-            }
-
-            return true;
+            return outPath;
         }
     }
 }

@@ -16,210 +16,190 @@ namespace FreeNest.Areas.Admin.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        private readonly string urlPath;
         private readonly IconHelper _iconHelper;
-        public LinksController(IServiceProvider serviceProvider, IMapper mapper, IConfiguration configuration, IconHelper iconHelper) : base(serviceProvider)
+        private readonly string _urlPath;
+
+        public LinksController(IServiceProvider serviceProvider, IMapper mapper, IConfiguration configuration, IconHelper iconHelper)
+            : base(serviceProvider)
         {
             _mapper = mapper;
             _configuration = configuration;
-            urlPath = $"/{_configuration["AdminUrl"]}/Links/";
             _iconHelper = iconHelper;
+            _urlPath = $"/{_configuration["AdminUrl"]}/Links/";
         }
 
         public IActionResult Index()
         {
-            LinkViewModel model = new();
-            JsonSerializerOptions options = new() { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            var userId = GetCurrentUserId();
+            var links = db.Links
+                .Where(w => w.UserId == userId)
+                .OrderBy(a => a.Order)
+                .ToList();
+
+            var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+
+            var model = new LinkViewModel
             {
-                model.JsonList = JsonSerializer.Serialize(dBContext.Links
-                    .Where(w => w.UserId == int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                    .OrderBy(a => a.Order)
-                    .ToList(), options);
-            }
+                JsonList = JsonSerializer.Serialize(links, options)
+            };
 
             return View(model);
         }
 
         public IActionResult Add()
         {
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
-            {
-                var model = new LinkDtoModel();
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
-                var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                var maxOrder = dBContext.Links
-                    .Where(l => l.UserId == userId)
-                    .Max(l => (int?)l.Order) ?? 0;
+            var userId = GetCurrentUserId();
+            var maxOrder = db.Links.Where(l => l.UserId == userId).Max(l => (int?)l.Order) ?? 0;
 
-                model.Order = maxOrder + 1;
+            var model = new LinkDtoModel { Order = maxOrder + 1 };
+            SetIconList();
 
-                ViewBag.IconList = _iconHelper.GetIcons();
-
-                return View(model);
-            }
+            return View(model);
         }
 
         [HttpPost]
         public IActionResult Add([FromForm] LinkDtoModel form)
         {
-            ReturnMessage returnMessage = new();
-
             if (!ModelState.IsValid)
-                returnMessage.CreateMessage("Please fill in the required fields!");
-            else
+                return HandleError("Please fill in the required fields!", $"{_urlPath}Add/");
+
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+
+            try
             {
-                try
-                {
-                    using (var scope = _serviceProvider.CreateScope())
-                    using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
-                    {
+                var exists = db.Links.Any(b => b.Id == form.Id);
+                if (exists)
+                    return HandleError("Already added!", $"{_urlPath}Add/");
 
-                        var IsAvailable = dBContext.Links.Where(b => b.Id.Equals(form.Id)).FirstOrDefault();
+                var model = _mapper.Map<Link>(form);
+                model.UserId = GetCurrentUserId();
 
-                        if (IsAvailable is null)
-                        {
-                            var model = _mapper.Map<Link>(form);
-                            model.UserId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                            dBContext.Links.Add(model);
-                            dBContext.SaveChanges();
+                db.Links.Add(model);
+                db.SaveChanges();
 
-                            returnMessage.CreateMessage("Successfully added!", ReturnMessageType.Success);
-                        }
-                        else
-                            returnMessage.CreateMessage("Already added!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    returnMessage.CreateMessage("Error: " + ex.Message);
-                }
-
+                return HandleSuccess("Successfully added!", $"{_urlPath}Add/");
             }
-            TempData["returnMessage"] = returnMessage.ScriptTxt;
-
-            return Redirect($"{urlPath}Add/");
+            catch (Exception ex)
+            {
+                return HandleError("Error: " + ex.Message, $"{_urlPath}Add/");
+            }
         }
 
-        public IActionResult Edit(int Id)
+        public IActionResult Edit(int id)
         {
-            ReturnMessage returnMessage = new();
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
-            {
-                var model = dBContext.Links.Where(b => b.Id == Id).FirstOrDefault();
+            var model = db.Links.FirstOrDefault(b => b.Id == id);
+            if (model is null)
+                return Redirect("/404");
 
-                if (model is null)
-                    return Redirect("/404");
-
-                var models = _mapper.Map<LinkDtoModel>(model);
-                if (models is not null)
-                {
-                    ViewBag.IconList = _iconHelper.GetIcons();
-                    return View(models);
-                }
-
-            }
-            return View();
+            var dto = _mapper.Map<LinkDtoModel>(model);
+            SetIconList();
+            return View(dto);
         }
 
         [HttpPost]
         public IActionResult Edit([FromForm] LinkDtoModel form)
         {
-            ReturnMessage returnMessage = new();
-
             if (!ModelState.IsValid)
-                returnMessage.CreateMessage("Please fill in the required fields!");
-            else
+                return HandleError("Please fill in the required fields!", $"{_urlPath}Edit/{form.Id}");
+
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+
+            try
             {
-                try
-                {
-                    using (var scope = _serviceProvider.CreateScope())
-                    using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
-                    {
-                        var model = dBContext.Links.Where(b => b.Id == form.Id).FirstOrDefault();
+                var model = db.Links.FirstOrDefault(b => b.Id == form.Id);
+                if (model is null)
+                    return HandleError("Not found!", $"{_urlPath}Edit/{form.Id}");
 
-                        if (model is not null)
-                        {
-                            var IsSameEntry = dBContext.Links.Where(b => b.Id == form.Id).FirstOrDefault();
-                            var formModel = form;
+                // Kullanıcı ID'sini değiştirmiyoruz
+                form.UserId = model.UserId;
+                model.UpdatedAt = DateTime.UtcNow;
 
-                            if (IsSameEntry is null)
-                            {
-                                form.UserId = model.UserId;
-                                model.UpdatedAt = DateTime.UtcNow;
-                                _mapper.Map(form, model);
-                                dBContext.Links.Update(model);
-                                dBContext.SaveChanges();
+                _mapper.Map(form, model);
+                db.Links.Update(model);
+                db.SaveChanges();
 
-                                returnMessage.CreateMessage("Successfully", ReturnMessageType.Success);
-                            }
-                            else
-                                returnMessage.CreateMessage("There is already this kind of record.", ReturnMessageType.Success);
-                        }
-                        else
-                            returnMessage.CreateMessage("Not found");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    returnMessage.CreateMessage("Error: " + ex.Message);
-                }
+                return HandleSuccess("Successfully updated!", $"{_urlPath}Edit/{form.Id}");
             }
-
-            TempData["returnMessage"] = returnMessage.ScriptTxt;
-
-            return Redirect($"{urlPath}Edit/{form.Id}");
+            catch (Exception ex)
+            {
+                return HandleError("Error: " + ex.Message, $"{_urlPath}Edit/{form.Id}");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateOrder(int[] ids, int[] orders)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+
+            try
             {
-                try
+                for (int i = 0; i < ids.Length; i++)
                 {
-                    for (int i = 0; i < ids.Length; i++)
+                    var link = await db.Links.FindAsync(ids[i]);
+                    if (link != null)
                     {
-                        var link = await dBContext.Links.FindAsync(ids[i]);
-                        if (link != null)
-                        {
-                            link.Order = orders[i];
-                            link.UpdatedAt = DateTime.UtcNow;
-                        }
+                        link.Order = orders[i];
+                        link.UpdatedAt = DateTime.UtcNow;
                     }
-                    await dBContext.SaveChangesAsync();
-                    return Json(new { success = true });
                 }
-                catch (Exception ex)
-                {
-                    return Json(new { success = false, message = ex.Message });
-                }
+                await db.SaveChangesAsync();
+                return Json(new { success = true });
             }
-        }
-
-        public JsonResult Delete(int Id)
-        {
-            using (var scope = _serviceProvider.CreateScope())
-            using (var dBContext = scope.ServiceProvider.GetRequiredService<DataDbContext>())
+            catch (Exception ex)
             {
-                var model = dBContext.Links.Where(b => b.Id == Id).FirstOrDefault();
-
-                if (model is not null)
-                {
-                    dBContext.Remove(model);
-                    dBContext.SaveChanges();
-                    return new JsonResult("success");
-                }
-                else
-                    return new JsonResult("error");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
+        [HttpPost]
+        public JsonResult Delete(int id)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+
+            var model = db.Links.FirstOrDefault(b => b.Id == id);
+            if (model is null)
+                return new JsonResult("error");
+
+            db.Links.Remove(model);
+            db.SaveChanges();
+            return new JsonResult("success");
+        }
+
+        // --- Private Helpers ---
+        private int GetCurrentUserId() =>
+            int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        private void SetIconList() =>
+            ViewBag.IconList = _iconHelper.GetIcons() ?? new List<string>();
+
+
+        private IActionResult HandleError(string message, string redirectUrl)
+        {
+            var rm = new ReturnMessage();
+            rm.CreateMessage(message);
+            TempData["returnMessage"] = rm.ScriptTxt;
+            return Redirect(redirectUrl);
+        }
+
+        private IActionResult HandleSuccess(string message, string redirectUrl)
+        {
+            var rm = new ReturnMessage();
+            rm.CreateMessage(message, ReturnMessageType.Success);
+            TempData["returnMessage"] = rm.ScriptTxt;
+            return Redirect(redirectUrl);
+        }
     }
 }
