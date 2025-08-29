@@ -178,6 +178,7 @@ namespace FreeNest.Areas.Admin.Controllers
                 user.PasswordHash = new PasswordHasher<string>().HashPassword(_hashKey, form.PasswordHash);
             }
 
+            user.UpdatedAt = DateTime.UtcNow;
             db.Users.Update(user);
             db.SaveChanges();
 
